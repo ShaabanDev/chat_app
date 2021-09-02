@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -5,9 +6,33 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          PopupMenuButton(
+            itemBuilder: (ctx) => [
+              PopupMenuItem(
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(
+                    Icons.exit_to_app,
+                    color: Colors.black,
+                  ),
+                  SizedBox(width: 8),
+                  Text("Logout"),
+                ]),
+                value: "LOGOUT",
+              )
+            ],
+            onSelected: (value) {
+              if (value == 'LOGOUT') {
+                FirebaseAuth.instance.signOut();
+              }
+            },
+          )
+        ],
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('chat/KRdGzyw5aESElHpeyxry/messages')
+            .collection('chats/CmDaTL9MJXEsB3Apv61V/messages')
             .snapshots(),
         builder: (ctx, streamSnapshot) {
           if (streamSnapshot.connectionState == ConnectionState.waiting) {
@@ -29,7 +54,7 @@ class ChatScreen extends StatelessWidget {
         child: Icon(Icons.add),
         onPressed: () {
           FirebaseFirestore.instance
-              .collection('chat/KRdGzyw5aESElHpeyxry/messages')
+              .collection('chats/CmDaTL9MJXEsB3Apv61V/messages')
               .add({'text': 'This was added by clicking the button!'});
         },
       ),
