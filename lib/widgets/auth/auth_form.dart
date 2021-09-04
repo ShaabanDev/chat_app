@@ -9,7 +9,7 @@ class AuthForm extends StatefulWidget {
     String email,
     String password,
     String username,
-    File image,
+    File? image,
     bool isLogin,
     BuildContext ctx,
   ) trysubmit;
@@ -44,7 +44,7 @@ class _AuthFormState extends State<AuthForm> {
     if (_validstate) {
       _formKey.currentState!.save();
       widget.trysubmit(_userEmail.trim(), _userPassowrd, _userName.trim(),
-          _userImage!, _login, context);
+          _userImage, _login, context);
     }
   }
 

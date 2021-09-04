@@ -16,6 +16,7 @@ class Messages extends StatelessWidget {
             return Center(child: CircularProgressIndicator());
           }
           final chat = chatSnapShot.data!.docs;
+
           final currentUserId = FirebaseAuth.instance.currentUser!.uid;
           return ListView.builder(
             reverse: true,
@@ -23,7 +24,7 @@ class Messages extends StatelessWidget {
             itemBuilder: (ctx, index) => MessageBubble(
                 chat[index]['text'],
                 chat[index]['userId'] == currentUserId,
-                chat[index]['userimage'],
+                chat[index]['userImage'],
                 chat[index]['userName']),
           );
         });
