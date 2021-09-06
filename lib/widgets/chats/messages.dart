@@ -23,6 +23,7 @@ class Messages extends StatelessWidget {
             itemCount: chat.length,
             itemBuilder: (ctx, index) => MessageBubble(
                 chat[index]['text'],
+                chat[index]['image'],
                 chat[index]['userId'] == currentUserId,
                 chat[index]['userImage'],
                 chat[index]['userName']),

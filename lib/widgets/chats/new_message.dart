@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class NewMessage extends StatefulWidget {
   @override
@@ -9,9 +12,12 @@ class NewMessage extends StatefulWidget {
 }
 
 class _NewMessageState extends State<NewMessage> {
-  var enteredMessage = '';
+  var enteredMessage;
+  File? sendImageFile;
+  String uploadedImage = '';
   var enteredMessageContoller = TextEditingController();
-  void _sendMessage() async {
+  bool imageOrNot = false;
+  Future<void> _sendMessage() async {
     enteredMessageContoller.clear();
     // FocusScope.of(context).unfocus();
     final chatDoc = FirebaseFirestore.instance.collection('chat');
@@ -21,12 +27,43 @@ class _NewMessageState extends State<NewMessage> {
         .doc(currentUser!.uid)
         .get();
     await chatDoc.add({
-      'text': enteredMessage,
+      'text': imageOrNot ? 'default' : enteredMessage,
+      'image': imageOrNot ? uploadedImage : 'null',
       'sendTime': Timestamp.now(),
       'userId': currentUser.uid,
       'userName': userDocs.get('username'),
       'userImage': userDocs.get('userimage'),
+    }).then((x) {
+      setState(() {
+        enteredMessage = '';
+        imageOrNot = false;
+      });
     });
+  }
+
+  void sendImage() async {
+    FocusScope.of(context).unfocus();
+
+    ImagePicker img = ImagePicker();
+    final imageFile =
+        await img.pickImage(source: ImageSource.gallery, imageQuality: 50);
+    if (imageFile == null) {
+      return;
+    }
+
+    sendImageFile = File(imageFile.path);
+
+    final imageRef = FirebaseStorage.instance
+        .ref()
+        .child('chatImages')
+        .child(DateTime.now().toString() + 'jpg');
+    await imageRef.putFile(sendImageFile!).whenComplete(() async {
+      uploadedImage = await imageRef.getDownloadURL();
+      setState(() {
+        imageOrNot = true;
+      });
+    });
+    _sendMessage();
   }
 
   @override
@@ -36,6 +73,11 @@ class _NewMessageState extends State<NewMessage> {
       padding: EdgeInsets.all(8),
       child: Row(
         children: [
+          IconButton(
+            onPressed: sendImage,
+            icon: Icon(Icons.photo),
+            color: Theme.of(context).primaryColor,
+          ),
           Expanded(
               child: TextField(
             decoration: InputDecoration(
@@ -49,7 +91,7 @@ class _NewMessageState extends State<NewMessage> {
             controller: enteredMessageContoller,
           )),
           IconButton(
-            onPressed: enteredMessage.trim().isEmpty ? null : _sendMessage,
+            onPressed: enteredMessage == "" ? null : _sendMessage,
             icon: Icon(Icons.send),
             color: Theme.of(context).primaryColor,
           )
